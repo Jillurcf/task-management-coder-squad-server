@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      "http://localhost:5174",
+      "http://localhost:5173",
       "https://task-management-coder-squad.web.app",
       "https://task-management-coder-squad.firebaseapp.com",
     ],
@@ -50,10 +50,9 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const newTaskCollection = client.db("tmcs").collection("newTasks");
-    const userCollection = client.db("userDB").collection("user");
-    const purchaseCollection = client.db("purchaseDB").collection("purchased");
+    
 
-    // AllFood Related Api
+    // task Related Api
     app.get("/newTasks", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
@@ -66,6 +65,13 @@ async function run() {
         .toArray();
       res.send(result);
     });
+    app.get("/newTasks/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await newTaskCollection.findOne(query)
+      res.send(result);
+      console.log(result);
+    });
 
     app.post("/addTask", async (req, res) => {
       const addTask = req.body;
@@ -73,32 +79,23 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/api/v1/allFood/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updatedFood = req.body;
-      const food = {
-        $set: {
-          food_name: updatedFood.food_name,
-          food_image: updatedFood.food_image,
-          food_category: updatedFood.food_category,
-          quantity: updatedFood.quantity,
-          price: updatedFood.price,
-          count: updatedFood.count,
-          userName: updatedFood.userName,
-          email: updatedFood.email,
-          origin: updatedFood.origin,
-          description: updatedFood.description,
-        },
-      };
-      const result = await allFoodCollection.updateOne(filter, food, options);
-      res.send(result);
-      console.log(result);
-    });
+    // app.put("/allTask/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const options = { upsert: true };
+    //   const updateTask = req.body;
+    //   const food = {
+    //     $set: {
+    //       status: updateTask.status,
+    //     },
+    //   };
+    //   const result = await newTaskCollection.updateOne(filter, food, options);
+    //   res.send(result);
+    //   console.log(result);
+    // });
 
 
-    app.put("/api/v1/alltask/quantity/:id", async (req, res) => {
+    app.put("/alltask/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateStatus = req.body;
@@ -112,7 +109,7 @@ async function run() {
       console.log(result);
     });
 
-    app.delete("/api/v1/alltask/:id", async (req, res) => {
+    app.delete("/alltask/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await newTaskCollection.deleteOne(query);
